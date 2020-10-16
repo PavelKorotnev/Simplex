@@ -167,7 +167,10 @@ class Simplex(QDialog):
         if flag == True:
             self.clear_grid()
             self.calculate()
-            self.delete_column()
+            if self.col_x[self.main_cell[0]] not in [i+1 for i in range(len(self.main_line) - 1)]:
+                self.delete_column()
+            else:
+                self.col_x[self.main_cell[0]], self.row_x[self.main_cell[1]] = self.row_x[self.main_cell[1]], self.col_x[self.main_cell[0]]
             self.rendering_designations()
             self.searching_of_main()
             self.rendering_grid()
