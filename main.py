@@ -5,12 +5,13 @@ from PyQt5.QtCore import QThread, pyqtSignal
 from PyQt5 import QtCore
 
 from fractions import Fraction
+import copy
 import sys
 
 
-# задача на максимум
+# задача на минимум
 
-class Options(QDialog):
+class Simplex(QDialog):
     def __init__(self, matrix):
         super().__init__()
         self.title = 'Вычисление'
@@ -136,9 +137,26 @@ class Options(QDialog):
                 self.grid.itemAt(i).widget().setParent(None)
 
     def prew(self):
-        pass
+        self.matrix = copy.deepcopy(self.history_matrix[-1])
+        self.row_x = copy.deepcopy(self.history_row_x[-1])
+        self.col_x = copy.deepcopy(self.history_col_x[-1])
+
+        del self.history_matrix[-1]
+        del self.history_row_x[-1]
+        del self.history_col_x[-1]
+
+        if len(self.history_matrix) > 0:
+            self.prew_button.setEnabled(True)
+        else:
+            self.prew_button.setEnabled(False)
+
+        self.clear_grid()
+        self.rendering_designations()
+        self.searching_of_main()
+        self.rendering_grid()
 
     def next(self, i='placeholder', j='placeholder'):
+        self.add_history()
         self.main_cell = [i, j]
 
         flag = False
@@ -153,6 +171,10 @@ class Options(QDialog):
             self.rendering_designations()
             self.searching_of_main()
             self.rendering_grid()
+            if len(self.history_matrix) > 0:
+                self.prew_button.setEnabled(True)
+            else:
+                self.prew_button.setEnabled(False)
 
         flag = False
         for i in self.matrix[-1][:-1]:
@@ -161,6 +183,11 @@ class Options(QDialog):
                 break
         if flag == False:
             self.next_button.setEnabled(True)
+
+    def add_history(self):
+        self.history_matrix.append(copy.deepcopy(self.matrix))
+        self.history_row_x.append(copy.deepcopy(self.row_x))
+        self.history_col_x.append(copy.deepcopy(self.col_x))
 
 
     def calculation_in_main_line(self):
@@ -222,36 +249,6 @@ class Options(QDialog):
         self.label_x = QLabel(f'x* = ({x_string})')
         self.grid.addWidget(self.label_f)
         self.grid.addWidget(self.label_x)
-
-
-class Advice(QDialog):
-    def __init__(self):
-        super().__init__()
-        self.title = 'Справка'
-        # self.matrix = matrix
-        self.initUI()
-
-    def initUI(self):
-        self.setWindowTitle(self.title)
-        self.widget = QWidget()
-        self.grid = QGridLayout()
-        self.setLayout(self.grid)
-
-        self.one_s= 'Справочная информация\n'
-        self.two_s = 'Лабораторная работа использует метод искусственного базиса для решения уравнения(решается задача на максимум).'
-        self.three_s = 'Зелёным цетом выделена целеваю функция. Остальные строки предназначены для заполнения их коэффициентами ограничений.'
-        self.four_s = 'Предполагается, что свободнй член уже находится в правой части уравнения!'
-
-
-        self.one = QLabel(self.one_s)
-        self.two = QLabel(self.two_s)
-        self.three = QLabel(self.three_s)
-        self.four = QLabel(self.four_s)
-
-        self.grid.addWidget(self.one, 0, 2, 1,1)
-        self.grid.addWidget(self.two, 1, 0, 1,5)
-        self.grid.addWidget(self.three, 2, 0, 1,5)
-        self.grid.addWidget(self.four, 3, 0, 1,5)
 
 
 class Main(QMainWindow):
@@ -358,12 +355,42 @@ class Main(QMainWindow):
         for i in matrix[1:]:  # Делаем положительными свободные члены
             if i[-1] < Fraction(0):
                 i[-1] *= -1
-        dialog = Options(matrix)
+        dialog = Simplex(matrix)
         dialog.exec_()
 
     def advice(self):
         spravka = Advice()
         spravka.exec_()
+
+
+class Advice(QDialog):
+    def __init__(self):
+        super().__init__()
+        self.title = 'Справка'
+        self.initUI()
+
+    def initUI(self):
+        self.setWindowTitle(self.title)
+        self.widget = QWidget()
+        self.grid = QGridLayout()
+        self.setLayout(self.grid)
+
+        self.one_s= 'Справочная информация\n'
+        self.two_s = 'Лабораторная работа использует метод искусственного базиса для решения уравнения(решается задача на максимум).'
+        self.three_s = 'Зелёным цетом выделена целеваю функция. Остальные строки предназначены для заполнения их коэффициентами ограничений.'
+        self.four_s = 'Предполагается, что свободнй член уже находится в правой части уравнения!'
+
+
+        self.one = QLabel(self.one_s)
+        self.two = QLabel(self.two_s)
+        self.three = QLabel(self.three_s)
+        self.four = QLabel(self.four_s)
+
+        self.grid.addWidget(self.one, 0, 2, 1,1)
+        self.grid.addWidget(self.two, 1, 0, 1,5)
+        self.grid.addWidget(self.three, 2, 0, 1,5)
+        self.grid.addWidget(self.four, 3, 0, 1,5)
+
 
 
 if __name__ == '__main__':
