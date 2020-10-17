@@ -9,7 +9,7 @@ import copy
 import sys
 
 
-# задача на минимум
+# задача на максимум
 
 class Simplex(QDialog):
     def __init__(self, matrix):
@@ -238,6 +238,8 @@ class Simplex(QDialog):
                 self.output(final_string, xn)
 
     def output(self, final_string, xn):
+        print(final_string)
+        print(xn)
         x = [0 for _ in range(len(final_string)-1)]
         for key, value in xn.items():
             x[key-1] = value[-1]
@@ -355,9 +357,10 @@ class Main(QMainWindow):
         self.calculate(matrix)
 
     def calculate(self, matrix):  # Вычисление
-        for i in matrix[1:]:  # Делаем положительными свободные члены
-            if i[-1] < Fraction(0):
-                i[-1] *= -1
+        for i, line in enumerate(matrix[1:]):  # Делаем положительными свободные члены
+            if line[-1] < Fraction(0):
+                for j in range(len(matrix[i+1])):
+                    matrix[i+1][j] *= -1
         dialog = Simplex(matrix)
         dialog.exec_()
 
