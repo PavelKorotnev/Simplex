@@ -238,8 +238,6 @@ class Simplex(QDialog):
                 self.output(final_string, xn)
 
     def output(self, final_string, xn):
-        print(final_string)
-        print(xn)
         x = [0 for _ in range(len(final_string)-1)]
         for key, value in xn.items():
             x[key-1] = value[-1]
