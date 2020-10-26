@@ -9,7 +9,7 @@ import copy
 import sys
 
 
-# задача на максимум
+# задача на минимум
 
 class Simplex(QDialog):
     def __init__(self, matrix):
@@ -19,6 +19,8 @@ class Simplex(QDialog):
         self.history_matrix = []
         self.history_col_x = []
         self.history_row_x = []
+
+        self.simplex_flag = False
         self.initUI()
 
     def initUI(self):
@@ -70,22 +72,35 @@ class Simplex(QDialog):
 
     def searching_of_main(self):
         j_i = []
+        negative = False
         for i, val in enumerate(self.matrix[-1][:-1]):
             if val < 0:
                 j_i.append(i)
+            if val <= 0:
+                negative = True
 
-        for j in j_i:
-            minimum = 100000
-            min_index = []
-            for i in range(len(self.matrix)-1):
-                try:
-                    if minimum > (self.matrix[i][-1] / self.matrix[i][j]) > 0:
-                        minimum = self.matrix[i][-1] / self.matrix[i][j]
-                        min_index = [i,j]
-                except:
-                    continue
-            self.main_cells.append(min_index)
-        y_i = []
+
+        if negative:
+            for j in j_i:
+                minimum = 100000
+                min_index = []
+                for i in range(len(self.matrix)-1):
+                    try:
+                        if minimum > (self.matrix[i][-1] / self.matrix[i][j]) and self.matrix[i][j] > 0:
+                            if self.col_x[i] not in [k+1 for k in range(len(self.main_line)-1)]:
+                                minimum = self.matrix[i][-1] / self.matrix[i][j]
+                                min_index = [i,j]
+                            elif self.simplex_flag == True:
+                                minimum = self.matrix[i][-1] / self.matrix[i][j]
+                                min_index = [i,j]
+                            # self.main_cells.append(min_index)
+                    except:
+                        continue
+                self.main_cells.append(min_index)
+            y_i = []
+        else:
+            if not self.simplex_flag:
+                print('Нерешаемо!')
 
     def rendering_grid(self):
         for i, line in enumerate(self.matrix):
@@ -137,6 +152,7 @@ class Simplex(QDialog):
                 self.grid.itemAt(i).widget().setParent(None)
 
     def prew(self):
+        self.next_button.setEnabled(False)
         self.matrix = copy.deepcopy(self.history_matrix[-1])
         self.row_x = copy.deepcopy(self.history_row_x[-1])
         self.col_x = copy.deepcopy(self.history_col_x[-1])
@@ -179,13 +195,23 @@ class Simplex(QDialog):
             else:
                 self.prew_button.setEnabled(False)
 
-        flag = False
-        for i in self.matrix[-1][:-1]:
-            if i < 0:
-                flag = True
-                break
-        if flag == False:
-            self.next_button.setEnabled(True)
+        if not self.simplex_flag:
+            flag = True
+            for i in self.matrix[-1][:-1]:
+                if i != 0:
+                    flag = False
+                    break
+            if flag:
+                self.next_button.setEnabled(True)
+        else:
+            flag = True
+            for i in self.matrix[-1][:-1]:
+                if i < 0:
+                    flag = False
+                    break
+            if flag:
+                self.next_button.setEnabled(True)
+
 
     def add_history(self):
         self.history_matrix.append(copy.deepcopy(self.matrix))
@@ -194,6 +220,7 @@ class Simplex(QDialog):
 
 
     def calculation_in_main_line(self):
+        self.simplex_flag = True
         self.clear_grid()
         ln = len(self.main_line)-1
         xn = {}
@@ -218,6 +245,8 @@ class Simplex(QDialog):
                 fl = True
 
         if fl == False:
+            self.rendering_designations()
+            self.rendering_grid()
             self.output(final_string, xn)
         else:
             self.next_button.setEnabled(False)
@@ -233,6 +262,7 @@ class Simplex(QDialog):
             for i in self.matrix[-1][:-1]:
                 if i < 0:
                     flag = True
+                    self.simplex_flag = True
                     break
             if flag == False:
                 self.output(final_string, xn)
@@ -252,6 +282,7 @@ class Simplex(QDialog):
         self.label_x = QLabel(f'x* = ({x_string})')
         self.grid.addWidget(self.label_f)
         self.grid.addWidget(self.label_x)
+        self.next_button.setEnabled(False)
 
 
 class Main(QMainWindow):
@@ -355,10 +386,9 @@ class Main(QMainWindow):
         self.calculate(matrix)
 
     def calculate(self, matrix):  # Вычисление
-        for i, line in enumerate(matrix[1:]):  # Делаем положительными свободные члены
-            if line[-1] < Fraction(0):
-                for j in range(len(matrix[i+1])):
-                    matrix[i+1][j] *= -1
+        # for i in matrix[1:]:  # Делаем положительными свободные члены
+        #     if i[-1] < Fraction(0):
+        #         i[-1] *= -1
         dialog = Simplex(matrix)
         dialog.exec_()
 
