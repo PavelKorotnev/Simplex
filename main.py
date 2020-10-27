@@ -19,6 +19,7 @@ class Simplex(QDialog):
         self.history_matrix = []
         self.history_col_x = []
         self.history_row_x = []
+        self.history_simplex_state = []
 
         self.simplex_flag = False
         self.initUI()
@@ -79,21 +80,23 @@ class Simplex(QDialog):
             if val <= 0:
                 negative = True
 
-
         if negative:
             for j in j_i:
                 minimum = 100000
                 min_index = []
                 for i in range(len(self.matrix)-1):
                     try:
+                        # print(minimum,'', (self.matrix[i][-1] / self.matrix[i][j]))
                         if minimum > (self.matrix[i][-1] / self.matrix[i][j]) and self.matrix[i][j] > 0:
-                            if self.col_x[i] not in [k+1 for k in range(len(self.main_line)-1)]:
-                                minimum = self.matrix[i][-1] / self.matrix[i][j]
-                                min_index = [i,j]
-                            elif self.simplex_flag == True:
-                                minimum = self.matrix[i][-1] / self.matrix[i][j]
-                                min_index = [i,j]
-                            # self.main_cells.append(min_index)
+                            minimum = self.matrix[i][-1] / self.matrix[i][j]
+                            min_index = [i,j]
+                            # print(self.matrix[i][-1] / self.matrix[i][j])
+                            # if self.col_x[i] not in [k+1 for k in range(len(self.main_line)-1)]:
+                            #     minimum = self.matrix[i][-1] / self.matrix[i][j]
+                            #     min_index = [i,j]
+                            # elif self.simplex_flag == True:
+                            #     minimum = self.matrix[i][-1] / self.matrix[i][j]
+                            #     min_index = [i,j]
                     except:
                         continue
                 self.main_cells.append(min_index)
@@ -156,10 +159,12 @@ class Simplex(QDialog):
         self.matrix = copy.deepcopy(self.history_matrix[-1])
         self.row_x = copy.deepcopy(self.history_row_x[-1])
         self.col_x = copy.deepcopy(self.history_col_x[-1])
+        self.simplex_flag = copy.deepcopy(self.history_simplex_state[-1])
 
         del self.history_matrix[-1]
         del self.history_row_x[-1]
         del self.history_col_x[-1]
+        del self.history_simplex_state[-1]
 
         if len(self.history_matrix) > 0:
             self.prew_button.setEnabled(True)
@@ -217,6 +222,7 @@ class Simplex(QDialog):
         self.history_matrix.append(copy.deepcopy(self.matrix))
         self.history_row_x.append(copy.deepcopy(self.row_x))
         self.history_col_x.append(copy.deepcopy(self.col_x))
+        self.history_simplex_state.append(copy.deepcopy(self.simplex_flag))
 
 
     def calculation_in_main_line(self):
@@ -413,7 +419,6 @@ class Advice(QDialog):
         self.two_s = 'Лабораторная работа использует метод искусственного базиса для решения уравнения(решается задача на максимум).'
         self.three_s = 'Зелёным цетом выделена целеваю функция. Остальные строки предназначены для заполнения их коэффициентами ограничений.'
         self.four_s = 'Предполагается, что свободнй член уже находится в правой части уравнения!'
-
 
         self.one = QLabel(self.one_s)
         self.two = QLabel(self.two_s)
