@@ -9,8 +9,6 @@ import copy
 import sys
 
 
-# задача на минимум
-
 class Simplex(QDialog):
     def __init__(self, matrix):
         super().__init__()
@@ -86,17 +84,9 @@ class Simplex(QDialog):
                 min_index = []
                 for i in range(len(self.matrix)-1):
                     try:
-                        # print(minimum,'', (self.matrix[i][-1] / self.matrix[i][j]))
                         if minimum > (self.matrix[i][-1] / self.matrix[i][j]) and self.matrix[i][j] > 0:
                             minimum = self.matrix[i][-1] / self.matrix[i][j]
                             min_index = [i,j]
-                            # print(self.matrix[i][-1] / self.matrix[i][j])
-                            # if self.col_x[i] not in [k+1 for k in range(len(self.main_line)-1)]:
-                            #     minimum = self.matrix[i][-1] / self.matrix[i][j]
-                            #     min_index = [i,j]
-                            # elif self.simplex_flag == True:
-                            #     minimum = self.matrix[i][-1] / self.matrix[i][j]
-                            #     min_index = [i,j]
                     except:
                         continue
                 self.main_cells.append(min_index)
@@ -309,12 +299,12 @@ class Main(QMainWindow):
         self.setCentralWidget(self.widget)
 
         self.comboBox_var = QComboBox()
-        self.comboBox_var.addItems(["3", "4", "5"])
+        self.comboBox_var.addItems(["3", "4", "5", "6", "7"])
         self.comboBox_var.activated.connect(self.combo_input)
         self.grid.addWidget(self.comboBox_var, 0, 0)
 
         self.comboBox_str = QComboBox()
-        self.comboBox_str.addItems(["2", "3", "4"])
+        self.comboBox_str.addItems(["2", "3", "4", "5", "6"])
         self.comboBox_str.activated.connect(self.combo_input)
         self.grid.addWidget(self.comboBox_str, 0, 1)
 
@@ -392,9 +382,6 @@ class Main(QMainWindow):
         self.calculate(matrix)
 
     def calculate(self, matrix):  # Вычисление
-        # for i in matrix[1:]:  # Делаем положительными свободные члены
-        #     if i[-1] < Fraction(0):
-        #         i[-1] *= -1
         dialog = Simplex(matrix)
         dialog.exec_()
 
@@ -429,7 +416,6 @@ class Advice(QDialog):
         self.grid.addWidget(self.two, 1, 0, 1,5)
         self.grid.addWidget(self.three, 2, 0, 1,5)
         self.grid.addWidget(self.four, 3, 0, 1,5)
-
 
 
 if __name__ == '__main__':
